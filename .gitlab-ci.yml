@@ -1,0 +1,32 @@
+
+image:
+  name: registry.gitlab.com/gitlab-org/terraform-images/stable:latest
+
+workflow:
+  rules:
+    - when: always
+
+variables:
+  TF_ROOT: ${CI_PROJECT_DIR}
+  AWS_REGION: $AWS_REGION
+
+cache:
+  key: ${CI_PROJECT_DIR}
+  paths:
+    - ${TF_ROOT}/.terraform
+
+before_script:
+  - rm -rf .terraform
+  - mkdir -p ~/.terraform && mkdir -p ~/.${TF_ROOT}/.terraform
+  - cd ${TF_ROOT}
+
+stages:
+  - clone
+  - validate
+  - plan
+  - deploy
+  
+include:
+  - local: '<folder-path>/tf-<env>.yml'
+    rules:
+      - if: $CI_COMMIT_BRANCH == "<env>"
